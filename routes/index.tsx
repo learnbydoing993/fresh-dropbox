@@ -1,19 +1,24 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import Layout from "../components/Layout.tsx";
 import { TableFolder } from "../components/TableFolder.tsx";
-import { Folder } from "../models/folder.ts";
-import { getFoldersByParentId, saveFolder } from "../utils/db.ts";
+import { Folder, SubContent } from "../models/folder.ts";
+import { getFilesByParentId, getFoldersByParentId, saveFolder } from "../utils/db.ts";
 
-export const handler: Handlers<Folder[]> = {
+export const handler: Handlers<SubContent> = {
   async GET(_req, ctx) {
     const subFolders = await getFoldersByParentId('home')
-    return ctx.render(subFolders);
+    const subFiles = await getFilesByParentId('home');
+
+    const subContent: SubContent = {
+      subFolders,
+      subFiles
+    }
+    return ctx.render(subContent);
   },
 
   async POST(req, _ctx) {
     const form = await req.formData();
     const folder = form.get("folder") as string;
-
 
     if (folder.length === 0) {
       return new Response("Invalid Content", { status: 400 });
@@ -36,10 +41,10 @@ export const handler: Handlers<Folder[]> = {
   },
 };
 
-export default function Home(props: PageProps<Folder[]>) {
+export default function Home(props: PageProps<SubContent>) {
   return (
     <Layout folder={null}>
-      <TableFolder folders={props.data} />
+      <TableFolder folders={props.data.subFolders} files={props.data.subFiles} />
     </Layout>
   );
 }

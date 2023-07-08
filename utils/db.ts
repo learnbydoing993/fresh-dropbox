@@ -1,3 +1,4 @@
+import { FreshFile } from "../models/file.ts";
 import { Folder } from "../models/folder.ts";
 
 const kv = await Deno.openKv()
@@ -25,10 +26,6 @@ export async function deleteFolder(id: string) {
   }
 }
 
-export async function testingSave(folder: Folder): Promise<void> {
-  await kv.set(["folders", "Dance", "baby", folder.id], folder);
-} 
-
 export async function getFolder(id: string): Promise<Folder | null> {
   const res = await kv.get<Folder>(["folders", id]);
   return res.value
@@ -43,15 +40,26 @@ export async function getFoldersByParentId(parentId: string): Promise<Folder[]> 
   return folders;
 }
 
-export async function listAll(): Promise<Folder[]> {
-  const iter = kv.list<Folder>({ prefix: ["folders"] });
-  const folders = [];
-  for await (const { value } of iter) {
-    folders.push(value);
-  }
-  return folders;
+export async function saveFile(file: FreshFile): Promise<void> {
+  const primaryKey = ["files", file.id];
+  const byParentKey = ["files_by_parent_folder", file.parentFolder, file.id];
+  await kv.atomic()
+    .check({ key: primaryKey, versionstamp: null})
+    .set(primaryKey, file)
+    .set(byParentKey, file)
+    .commit();
 }
 
-export async function deleteAll(id: string) {
-  await kv.delete(["folders", "Dance", "baby", id]);
+export async function getFile(id: string): Promise<FreshFile | null> {
+  const res = await kv.get<FreshFile>(["files", id]);
+  return res.value
+}
+
+export async function getFilesByParentId(parentId: string): Promise<FreshFile[]> {
+  const iter = kv.list<FreshFile>({ prefix: ["files_by_parent_folder", parentId] });
+  const files = [];
+  for await (const { value } of iter) {
+    files.push(value);
+  }
+  return files;
 }

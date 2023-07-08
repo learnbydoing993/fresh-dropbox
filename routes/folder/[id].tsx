@@ -3,7 +3,7 @@ import { Handlers } from "$fresh/server.ts";
 import Layout from "../../components/Layout.tsx";
 import { TableFolder } from "../../components/TableFolder.tsx";
 import { Folder, PageFolders } from "../../models/folder.ts";
-import { getFolder, getFoldersByParentId, saveFolder } from "../../utils/db.ts";
+import { getFilesByParentId, getFolder, getFoldersByParentId, saveFolder } from "../../utils/db.ts";
 
 
 export const handler: Handlers<PageFolders> = {
@@ -16,10 +16,14 @@ export const handler: Handlers<PageFolders> = {
     }
 
     const subFolders = await getFoldersByParentId(id)
+    const subFiles = await getFilesByParentId(id)
 
     const pageFolders: PageFolders = {
       currentFolder: folder,
-      subFolders: subFolders
+      subContent: {
+        subFolders,
+        subFiles
+      }
     }
     return ctx.render(pageFolders);
   },
@@ -53,7 +57,7 @@ export const handler: Handlers<PageFolders> = {
 export default function FolderPage(props: PageProps<PageFolders>) {
   return (
     <Layout folder={props.data.currentFolder}>
-      <TableFolder folders={props.data.subFolders} />
+      <TableFolder folders={props.data.subContent.subFolders} files={props.data.subContent.subFiles} />
     </Layout>
   );
 }
