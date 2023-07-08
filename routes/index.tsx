@@ -1,68 +1,45 @@
-import { Handlers } from "$fresh/server.ts";
-import CreateButton from "../islands/CreateButton.tsx";
+import { Handlers, PageProps } from "$fresh/server.ts";
 import Layout from "../components/Layout.tsx";
+import { TableFolder } from "../components/TableFolder.tsx";
+import { Folder } from "../models/folder.ts";
+import { getFoldersByParentId, saveFolder } from "../utils/db.ts";
 
-export const handler: Handlers = {
+export const handler: Handlers<Folder[]> = {
+  async GET(_req, ctx) {
+    const subFolders = await getFoldersByParentId('home')
+    return ctx.render(subFolders);
+  },
+
   async POST(req, _ctx) {
     const form = await req.formData();
-    const folder = form.get("folder")?.toString();
+    const folder = form.get("folder") as string;
 
-    // Store new folder in db
+
+    if (folder.length === 0) {
+      return new Response("Invalid Content", { status: 400 });
+    }
+
+    const newFolder: Folder = {
+      id: crypto.randomUUID(),
+      name: folder,
+      parentFolder: 'home'
+    }
+    await saveFolder(newFolder);
 
     // Redirect user to folder id page.
     const headers = new Headers();
-    headers.set("location", "/folder/someid");
+    headers.set("location", `/folder/${newFolder.id}`);
     return new Response(null, {
-      status: 303, // See Other
+      status: 303,
       headers,
     });
   },
 };
 
-export default function Home() {
+export default function Home(props: PageProps<Folder[]>) {
   return (
-    <Layout>
-      <div class="mt-10">
-        <table class="w-full border-collapse bg-white text-left text-sm text-gray-500">
-          <tbody class="divide-y divide-gray-100 border-t border-gray-100">
-            <tr class="flex justify-between items-center hover:bg-gray-50">
-              <th class="px-6 py-4 font-medium text-gray-900 flex items-center gap-1">
-                <img src="/folder.png" alt="" />
-                <span>Books</span>
-              </th>
-              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><a href="">View</a><a href="" class="text-primary-700">Delete</a></td>
-            </tr>
-            <tr class="flex justify-between items-center hover:bg-gray-50">
-              <th class="px-6 py-4 font-medium text-gray-900 flex items-center gap-1">
-                <img src="/folder.png" alt="" />
-                <span>Taxes</span>
-              </th>
-              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><a href="">View</a><a href="" class="text-primary-700">Delete</a></td>
-            </tr>
-            <tr class="flex justify-between items-center hover:bg-gray-50">
-              <th class="px-6 py-4 font-medium text-gray-900 flex items-center gap-1">
-                <img src="/folder.png" alt="" />
-                <span>School</span>
-              </th>
-              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><a href="">View</a><a href="" class="text-primary-700">Delete</a></td>
-            </tr>
-            <tr class="flex justify-between items-center hover:bg-gray-50">
-              <th class="px-6 py-4 font-medium text-gray-900 flex items-center gap-1">
-                <img src="/file.png" alt="" />
-                <span>CV.pdf</span>
-              </th>
-              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><a href="">View</a><a href="" class="text-primary-700">Delete</a></td>
-            </tr>
-            <tr class="flex justify-between items-center hover:bg-gray-50">
-              <th class="px-6 py-4 font-medium text-gray-900 flex items-center gap-1">
-                <img src="/file.png" alt="" />
-                <span>passwords.txt</span>
-              </th>
-              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><a href="">View</a><a href="" class="text-primary-700">Delete</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <Layout folder={null}>
+      <TableFolder folders={props.data} />
     </Layout>
   );
 }
