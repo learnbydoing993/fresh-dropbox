@@ -1,7 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { FreshFile } from "../models/file.ts";
 
-const client = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_KEY") || "");
+const client = createClient(
+  Deno.env.get("SUPABASE_URL") || "",
+  Deno.env.get("SUPABASE_KEY") || ""
+);
 
 export async function uploadFile(file: Blob, id: string, parentfolder: string): Promise<string | undefined> {
   const { data, error } = await client

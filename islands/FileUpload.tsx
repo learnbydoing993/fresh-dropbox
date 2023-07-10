@@ -3,12 +3,10 @@ interface FileUploadProps {
 }
 
 export default function FileUpload(props: FileUploadProps) {
-  // onDragOver sets inDropZone to true
   const handleDragOver = (event: Event) => {
     event.preventDefault();
   };
 
-  // onDrop sets inDropZone to false and adds files to fileList
   const handleDrop = async (event: DragEvent) => {
     event.preventDefault();
     if (event.dataTransfer) {
