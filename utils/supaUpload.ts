@@ -25,3 +25,11 @@ export async function getPublicUrl(file: FreshFile): Promise<string> {
 
   return data.publicUrl;
 }
+
+export async function removeFile(file: FreshFile): Promise<void> {
+  const { error } = await client.storage.from('folders').remove([file.parentFolder + "/" + file.id]);
+
+  if (error) {
+    console.log(error);
+  }
+}

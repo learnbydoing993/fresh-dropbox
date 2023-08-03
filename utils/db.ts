@@ -21,7 +21,7 @@ export async function deleteFolder(id: string) {
     res = await kv.atomic()
       .check(getRes)
       .delete(["folders", id])
-      .delete(["folders_by_parent_folder", getRes.value.parentFolder])
+      .delete(["folders_by_parent_folder", getRes.value.parentFolder, id])
       .commit();
   }
 }
@@ -62,4 +62,17 @@ export async function getFilesByParentId(parentId: string): Promise<FreshFile[]>
     files.push(value);
   }
   return files;
+}
+
+export async function deleteFile(id: string): Promise<void> {
+  let res = { ok: false };
+  while (!res.ok) {
+    const getRes = await kv.get<FreshFile>(["files", id]);
+    if (getRes.value === null) return;
+    res = await kv.atomic()
+      .check(getRes)
+      .delete(["files", id])
+      .delete(["files_by_parent_folder", getRes.value.parentFolder, id])
+      .commit();
+  }
 }

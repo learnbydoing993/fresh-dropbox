@@ -1,3 +1,4 @@
+import DeleteButton from "../islands/DeleteButton.tsx";
 import { FreshFile } from "../models/file.ts";
 import { Folder } from "../models/folder.ts";
 
@@ -19,7 +20,7 @@ export function TableFolder({folders, files}: FoldersProp) {
                   <span>{folder.name}</span>
                 </a>
               </th>
-              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><a href="" class="text-red-700">Delete</a></td>
+              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><DeleteButton file={null} folder={folder} /></td>
             </tr>
           )}
 
@@ -31,7 +32,7 @@ export function TableFolder({folders, files}: FoldersProp) {
                   <span>{file.name}</span>
                 </a>
               </th>
-              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><a href="" class="text-red-700">Delete</a></td>
+              <td class="flex justify-end gap-4 px-6 py-4 font-medium"><DeleteButton file={file} folder={null} /></td>
             </tr>
           )}
         </tbody>
